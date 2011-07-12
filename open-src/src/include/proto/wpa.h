@@ -21,7 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: wpa.h,v 1.16.166.1.20.1 2008/11/20 00:51:31 Exp $
+ * $Id: wpa.h,v 1.16.166.1.20.1 2008-11-20 00:51:31 Exp $
  */
 
 

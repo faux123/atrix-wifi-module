@@ -21,7 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: hndrte_cons.h,v 13.1.2.4 2010/07/15 19:06:11 Exp $
+ * $Id: hndrte_cons.h,v 13.1.2.4 2010-07-15 19:06:11 Exp $
  */
 
 #include <typedefs.h>

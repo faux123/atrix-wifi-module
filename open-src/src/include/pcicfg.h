@@ -21,7 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: pcicfg.h,v 1.41.12.3 2008/06/26 22:49:41 Exp $
+ * $Id: pcicfg.h,v 1.41.12.3 2008-06-26 22:49:41 Exp $
  */
 
 

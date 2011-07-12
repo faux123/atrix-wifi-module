@@ -21,7 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: dhdu.c,v 1.52.2.10.2.6.2.14 2010/01/19 07:24:15 Exp $
+ * $Id: dhdu.c,v 1.52.2.10.2.6.2.14 2010-01-19 07:24:15 Exp $
  */
 
 /* For backwards compatibility, the absense of the define 'BWL_NO_FILESYSTEM_SUPPORT'

@@ -21,7 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: dhd_common.c,v 1.5.6.8.2.6.6.69.4.21 2011/01/14 22:40:46 Exp $
+ * $Id: dhd_common.c,v 1.5.6.8.2.6.6.69.4.25 2011-02-11 21:16:02 Exp $
  */
 #include <typedefs.h>
 #include <osl.h>
@@ -924,6 +924,7 @@ wl_event_to_host_order(wl_event_msg_t *evt)
 
 void print_buf(void *pbuf, int len, int bytes_per_line)
 {
+#ifdef DHD_DEBUG
 	int i, j = 0;
 	unsigned char *buf = pbuf;
 
@@ -942,6 +943,7 @@ void print_buf(void *pbuf, int len, int bytes_per_line)
 		}
 	}
 	printf("\n");
+#endif /* DHD_DEBUG */
 }
 
 #define strtoul(nptr, endptr, base) bcm_strtoul((nptr), (endptr), (base))
@@ -1176,8 +1178,7 @@ fail:
 		MFREE(dhd->osh, buf, BUF_SIZE);
 }
 
-void
-dhd_arp_offload_set(dhd_pub_t * dhd, int arp_mode)
+void dhd_arp_offload_set(dhd_pub_t * dhd, int arp_mode)
 {
 	char iovbuf[32];
 	int retcode;
@@ -1193,8 +1194,7 @@ dhd_arp_offload_set(dhd_pub_t * dhd, int arp_mode)
 		__FUNCTION__, arp_mode));
 }
 
-void
-dhd_arp_offload_enable(dhd_pub_t * dhd, int arp_enable)
+void dhd_arp_offload_enable(dhd_pub_t * dhd, int arp_enable)
 {
 	char iovbuf[32];
 	int retcode;
@@ -1209,6 +1209,116 @@ dhd_arp_offload_enable(dhd_pub_t * dhd, int arp_enable)
 		DHD_TRACE(("%s: successfully enabed ARP offload to %d\n",
 		__FUNCTION__, arp_enable));
 }
+
+
+void dhd_aoe_arp_clr(dhd_pub_t *dhd)
+{
+#ifdef ARP_OFFLOAD_SUPPORT
+	int ret = 0;
+	int iov_len = 0;
+	char iovbuf[128];
+
+	if (dhd == NULL) return;
+
+	dhd_os_proto_block(dhd);
+
+	iov_len = bcm_mkiovar("arp_table_clear", 0, 0, iovbuf, sizeof(iovbuf));
+	if ((ret  = dhdcdc_set_ioctl(dhd, 0, WLC_SET_VAR, iovbuf, iov_len)) < 0)
+		DHD_ERROR(("%s failed code %d\n", __FUNCTION__, ret));
+
+	dhd_os_proto_unblock(dhd);
+
+#endif /* ARP_OFFLOAD_SUPPORT */
+}
+
+void dhd_aoe_hostip_clr(dhd_pub_t *dhd)
+{
+#ifdef ARP_OFFLOAD_SUPPORT
+	int ret = 0;
+	int iov_len = 0;
+	char iovbuf[128];
+
+	if (dhd == NULL) return;
+
+	dhd_os_proto_block(dhd);
+
+	iov_len = bcm_mkiovar("arp_hostip_clear", 0, 0, iovbuf, sizeof(iovbuf));
+	if ((ret  = dhdcdc_set_ioctl(dhd, 0, WLC_SET_VAR, iovbuf, iov_len)) < 0)
+		DHD_ERROR(("%s failed code %d\n", __FUNCTION__, ret));
+
+	dhd_os_proto_unblock(dhd);
+
+#endif /* ARP_OFFLOAD_SUPPORT */
+
+}
+
+void dhd_arp_offload_add_ip(dhd_pub_t *dhd, u32 ipaddr)
+{
+#ifdef ARP_OFFLOAD_SUPPORT
+	int iov_len = 0;
+	char iovbuf[32];
+	int retcode;
+
+	dhd_os_proto_block(dhd);
+
+	iov_len = bcm_mkiovar("arp_hostip", (char *)&ipaddr, 4, iovbuf, sizeof(iovbuf));
+	retcode = dhdcdc_set_ioctl(dhd, 0, WLC_SET_VAR, iovbuf, iov_len);
+
+	dhd_os_proto_unblock(dhd);
+
+	if (retcode)
+		DHD_TRACE(("%s: ARP ip addr add failed, retcode = %d\n",
+		__FUNCTION__, retcode));
+	else
+		DHD_TRACE(("%s: sARP H ipaddr entry added \n",
+		__FUNCTION__));
+#endif /* ARP_OFFLOAD_SUPPORT */
+}
+
+
+int dhd_arp_get_arp_hostip_table(dhd_pub_t *dhd, void *buf, int buflen)
+{
+#ifdef ARP_OFFLOAD_SUPPORT
+#define MAX_IPV4_ENTRIES 8
+
+	int retcode, i;
+	int iov_len = 0;
+	u32 *ptr32 = buf;
+	bool clr_bottom = FALSE;
+
+	if (!buf)
+		return -1;
+
+	dhd_os_proto_block(dhd);
+
+	iov_len = bcm_mkiovar("arp_hostip", 0, 0, buf, buflen);
+	retcode = dhdcdc_query_ioctl(dhd, 0, WLC_GET_VAR, buf, buflen);
+
+
+	/* clean up the buf, ascii reminder */
+	for (i = 0; i < MAX_IPV4_ENTRIES; i++) {
+
+		if (!clr_bottom) {
+			if (*ptr32 == 0)
+			clr_bottom = TRUE;
+		} else {
+			*ptr32 = 0;
+		}
+		ptr32++;
+	}
+
+	dhd_os_proto_unblock(dhd);
+
+	if (retcode) {
+		DHD_TRACE(("%s: ioctl WLC_GET_VAR error %d\n",
+		__FUNCTION__, retcode));
+
+		return -1;
+	}
+#endif /* ARP_OFFLOAD_SUPPORT */
+	return 0;
+}
+
 
 int
 dhd_preinit_ioctls(dhd_pub_t *dhd)
@@ -1860,14 +1970,30 @@ int dhd_pno_clean(dhd_pub_t *dhd)
 	return ret;
 }
 
+
 int dhd_pno_enable(dhd_pub_t *dhd, int pfn_enabled)
 {
 	char iovbuf[128];
+	uint8 bssid[6];
 	int ret = -1;
 
 	if ((!dhd) && ((pfn_enabled != 0) || (pfn_enabled != 1))) {
 		DHD_ERROR(("%s error exit\n", __FUNCTION__));
 		return ret;
+	}
+
+	memset(iovbuf, 0, sizeof(iovbuf));
+
+	/* Check if disassoc to enable pno */
+	if ((pfn_enabled) && \
+		((ret = dhdcdc_set_ioctl(dhd, 0, WLC_GET_BSSID, \
+				 (char *)&bssid, ETHER_ADDR_LEN)) == BCME_NOTASSOCIATED)) {
+			DHD_TRACE(("%s pno enable called in disassoc mode\n", __FUNCTION__));
+	}
+	else if (pfn_enabled) {
+			DHD_ERROR(("%s pno enable called in assoc mode ret=%d\n", \
+										__FUNCTION__, ret));
+			return ret;
 	}
 
 	/* Enable/disable PNO */
@@ -1888,7 +2014,8 @@ int dhd_pno_enable(dhd_pub_t *dhd, int pfn_enabled)
 
 /* Function to execute combined scan */
 int
-dhd_pno_set(dhd_pub_t *dhd, wlc_ssid_t* ssids_local, int nssid, ushort scan_fr)
+dhd_pno_set(dhd_pub_t *dhd, wlc_ssid_t* ssids_local, int nssid, ushort scan_fr, \
+			int pno_repeat, int pno_freq_expo_max)
 {
 	int err = -1;
 	char iovbuf[128];
@@ -1896,7 +2023,7 @@ dhd_pno_set(dhd_pub_t *dhd, wlc_ssid_t* ssids_local, int nssid, ushort scan_fr)
 	wl_pfn_param_t pfn_param;
 	wl_pfn_t	pfn_element;
 
-	DHD_TRACE(("%s nssid=%d nchan=%d\n", __FUNCTION__, nssid, scan_fr));
+	DHD_ERROR(("%s nssid=%d nchan=%d\n", __FUNCTION__, nssid, scan_fr));
 
 	if ((!dhd) && (!ssids_local)) {
 		DHD_ERROR(("%s error exit\n", __FUNCTION__));
@@ -1910,7 +2037,7 @@ dhd_pno_set(dhd_pub_t *dhd, wlc_ssid_t* ssids_local, int nssid, ushort scan_fr)
 			return err;
 		}
 	}
-#define  PNO_DUMP 1
+/* #define  PNO_DUMP 1 */
 #ifdef PNO_DUMP
 	{
 		int j;
@@ -1933,12 +2060,23 @@ dhd_pno_set(dhd_pub_t *dhd, wlc_ssid_t* ssids_local, int nssid, ushort scan_fr)
 	pfn_param.version = htod32(PFN_VERSION);
 	pfn_param.flags = htod16((PFN_LIST_ORDER << SORT_CRITERIA_BIT));
 
+	/* check and set extra pno params */
+	if ((pno_repeat != 0) || (pno_freq_expo_max != 0)) {
+		pfn_param.flags |= htod16(ENABLE << ENABLE_ADAPTSCAN_BIT);
+		pfn_param.repeat_scan = htod32(pno_repeat);
+		pfn_param.max_freq_adjust = htod32(pno_freq_expo_max);
+	}
+
 	/* set up pno scan fr */
 	if (scan_fr  != 0)
 		pfn_param.scan_freq = htod32(scan_fr);
 
-	if (pfn_param.scan_freq > PNO_SCAN_MAX_FW) {
-		DHD_ERROR(("%s pno freq above %d sec\n", __FUNCTION__, PNO_SCAN_MAX_FW));
+	if (pfn_param.scan_freq > PNO_SCAN_MAX_FW_SEC) {
+		DHD_ERROR(("%s pno freq above %d sec\n", __FUNCTION__, PNO_SCAN_MAX_FW_SEC));
+		return err;
+	}
+	if (pfn_param.scan_freq < PNO_SCAN_MIN_FW_SEC) {
+		DHD_ERROR(("%s pno freq less %d sec\n", __FUNCTION__, PNO_SCAN_MIN_FW_SEC));
 		return err;
 	}
 
@@ -1950,8 +2088,6 @@ dhd_pno_set(dhd_pub_t *dhd, wlc_ssid_t* ssids_local, int nssid, ushort scan_fr)
 
 		pfn_element.bss_type = htod32(DOT11_BSSTYPE_INFRASTRUCTURE);
 		pfn_element.auth = (DOT11_OPEN_SYSTEM);
-		pfn_element.wpa_auth = htod32(WPA_AUTH_PFN_ANY);
-		pfn_element.wsec = htod32(0);
 		pfn_element.infra = htod32(1);
 
 		memcpy((char *)pfn_element.ssid.SSID, ssids_local[i].SSID, ssids_local[i].SSID_len);
@@ -1967,14 +2103,15 @@ dhd_pno_set(dhd_pub_t *dhd, wlc_ssid_t* ssids_local, int nssid, ushort scan_fr)
 				return err;
 			}
 			else
-				DHD_ERROR(("%s set OK with PNO time=%d\n", __FUNCTION__, \
-								pfn_param.scan_freq));
+				DHD_ERROR(("%s set OK with PNO time=%d repeat=%d max_adjust=%d\n", \
+					__FUNCTION__, pfn_param.scan_freq, \
+					pfn_param.repeat_scan, pfn_param.max_freq_adjust));
 		}
 		else DHD_ERROR(("%s failed err=%d\n", __FUNCTION__, err));
 	}
 
 	/* Enable PNO */
-	/* dhd_pno_enable(dhd, 1); */
+/*	dhd_pno_enable(dhd, 1); */
 	return err;
 }
 

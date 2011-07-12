@@ -21,7 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: sbsdpcmdev.h,v 13.29.4.1.4.6.6.2 2008/12/31 21:16:51 Exp $
+ * $Id: sbsdpcmdev.h,v 13.29.4.1.4.6.6.2 2008-12-31 21:16:51 Exp $
  */
 
 #ifndef	_sbsdpcmdev_h_

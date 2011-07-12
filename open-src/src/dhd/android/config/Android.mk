@@ -1,7 +1,7 @@
 #
 # Copyright (C) 2009 Broadcom Corporation
 #
-# $Id: Android.mk,v 1.2 2010/04/14 19:33:18 Exp $
+# $Id: Android.mk,v 1.2 2010-04-14 19:33:18 Exp $
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

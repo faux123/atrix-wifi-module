@@ -21,7 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: hndrte_armtrap.h,v 13.3.196.2 2010/07/15 19:06:11 Exp $
+ * $Id: hndrte_armtrap.h,v 13.3.196.2 2010-07-15 19:06:11 Exp $
  */
 
 #ifndef	_hndrte_armtrap_h

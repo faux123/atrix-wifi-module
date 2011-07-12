@@ -21,7 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- *  $Id: bcmendian.h,v 1.31.302.1.16.1 2009/02/03 18:34:31 Exp $
+ *  $Id: bcmendian.h,v 1.31.302.1.16.1 2009-02-03 18:34:31 Exp $
  *
  * This file by default provides proper behavior on little-endian architectures.
  * On big-endian architectures, IL_BIGENDIAN should be defined.

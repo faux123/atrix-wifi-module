@@ -24,7 +24,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: dhd.h,v 1.32.4.7.2.4.14.49.4.9 2011/01/14 22:40:45 Exp $
+ * $Id: dhd.h,v 1.32.4.7.2.4.14.49.4.9 2011-01-14 22:40:45 Exp $
  */
 
 /****************
@@ -538,5 +538,11 @@ extern char nv_path[MOD_PARAM_PATHLEN];
 
 extern void dhd_wait_for_event(dhd_pub_t *dhd, bool *lockvar);
 extern void dhd_wait_event_wakeup(dhd_pub_t*dhd);
+
+/* dhd_commn arp offload wrapers */
+void dhd_aoe_hostip_clr(dhd_pub_t *dhd);
+void dhd_aoe_arp_clr(dhd_pub_t *dhd);
+int dhd_arp_get_arp_hostip_table(dhd_pub_t *dhd, void *buf, int buflen);
+void dhd_arp_offload_add_ip(dhd_pub_t *dhd, u32 ipaddr);
 
 #endif /* _dhd_h_ */

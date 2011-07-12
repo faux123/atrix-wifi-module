@@ -21,7 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: trxhdr.h,v 13.11.310.1 2008/08/17 12:58:58 Exp $
+ * $Id: trxhdr.h,v 13.11.310.1 2008-08-17 12:58:58 Exp $
  */
 
 #include <typedefs.h>

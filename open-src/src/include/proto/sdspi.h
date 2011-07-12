@@ -21,7 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: sdspi.h,v 9.1.20.1 2008/05/06 22:59:19 Exp $
+ * $Id: sdspi.h,v 9.1.20.1 2008-05-06 22:59:19 Exp $
  */
 
 #define SPI_START_M		BITFIELD_MASK(1)	/* Bit [31] 	- Start Bit */

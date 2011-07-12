@@ -21,7 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: aidmp.h,v 13.2.10.1 2008/05/07 20:32:12 Exp $
+ * $Id: aidmp.h,v 13.2.10.1 2008-05-07 20:32:12 Exp $
  */
 
 

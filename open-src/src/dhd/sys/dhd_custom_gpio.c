@@ -20,7 +20,7 @@
 * software in any way with any other Broadcom software provided under a license
 * other than the GPL, without Broadcom's express prior written consent.
 *
-* $Id: dhd_custom_gpio.c,v 1.1.4.8.4.3 2011/01/20 02:30:58 Exp $
+* $Id: dhd_custom_gpio.c,v 1.1.4.8.4.5 2011-02-09 23:35:01 Exp $
 */
 
 
@@ -38,16 +38,17 @@
 #define WL_ERROR(x) printf x
 #define WL_TRACE(x)
 
-#ifdef CUSTOMER_HW
+#ifdef CONFIG_WIFI_CONTROL_EXPORT
 extern  void bcm_wlan_power_off(int);
 extern  void bcm_wlan_power_on(int);
-extern  int bcm_wlan_get_irq(void);
 extern char bcm_wlan_mac[ETHER_ADDR_LEN];
-#endif /* CUSTOMER_HW */
-#ifdef CUSTOMER_HW2
+extern  int bcm_wlan_get_irq(void);
+#endif /* CONFIG_WIFI_CONTROL_EXPORT */
+#ifdef CONFIG_WIFI_CONTROL_FUNC
 int wifi_set_carddetect(int on);
 int wifi_set_power(int on, unsigned long msec);
 int wifi_get_irq_number(unsigned long *irq_flags_ptr);
+int wifi_get_mac_addr(unsigned char *buf);
 #endif
 
 #if defined(OOB_INTR_ONLY)
@@ -61,19 +62,35 @@ extern int sdioh_mmc_irq(int irq);
 #endif
 
 /* Customer specific Host GPIO defintion  */
-static int dhd_oob_gpio_num = -1; /* GG 19 */
+static int dhd_oob_gpio_num = -1;
 
 module_param(dhd_oob_gpio_num, int, 0644);
 MODULE_PARM_DESC(dhd_oob_gpio_num, "DHD oob gpio number");
 
+/* This function will return:
+ *  1) return :  Host gpio interrupt number per customer platform
+ *  2) irq_flags_ptr : Type of Host interrupt as Level or Edge
+ *
+ *  NOTE :
+ *  Customer should check his platform definitions
+ *  and his Host Interrupt spec
+ *  to figure out the proper setting for his platform.
+ *  Broadcom provides just reference settings as example.
+ *
+ */
 int dhd_customer_oob_irq_map(unsigned long *irq_flags_ptr)
 {
- int  irq = -1;
+	int  host_oob_irq = 0;
 
-	irq = bcm_wlan_get_irq();
-	return irq;
+#ifdef CONFIG_WIFI_CONTROL_EXPORT
+	host_oob_irq = bcm_wlan_get_irq();
+#endif /* CONFIG_WIFI_CONTROL_EXPORT */
+#ifdef CONFIG_WIFI_CONTROL_FUNC
+	host_oob_irq = wifi_get_irq_number(irq_flags_ptr);
+#endif /* CONFIG_WIFI_CONTROL_FUNC */
+
+	return (host_oob_irq);
 }
-
 #endif /* defined(OOB_INTR_ONLY) */
 
 /* Customer function to control hw specific wlan gpios */
@@ -82,12 +99,12 @@ dhd_customer_gpio_wlan_ctrl(int onoff)
 {
 	switch (onoff) {
 		case WLAN_RESET_OFF:
-			WL_TRACE(("%s: call customer specific GPIO to insert WLAN RESET\n",
+			WL_TRACE(("%s: call customer specific GPIO to assert WLAN RESET\n",
 				__FUNCTION__));
-#ifdef CUSTOMER_HW
+#ifdef CONFIG_WIFI_CONTROL_EXPORT
 			bcm_wlan_power_off(2);
 #endif /* CUSTOMER_HW */
-#ifdef CUSTOMER_HW2
+#ifdef CONFIG_WIFI_CONTROL_FUNC
 			wifi_set_power(0, 0);
 #endif
 			WL_ERROR(("=========== WLAN placed in RESET ========\n"));
@@ -96,10 +113,10 @@ dhd_customer_gpio_wlan_ctrl(int onoff)
 		case WLAN_RESET_ON:
 			WL_TRACE(("%s: callc customer specific GPIO to remove WLAN RESET\n",
 				__FUNCTION__));
-#ifdef CUSTOMER_HW
+#ifdef CONFIG_WIFI_CONTROL_EXPORT
 			bcm_wlan_power_on(2);
 #endif /* CUSTOMER_HW */
-#ifdef CUSTOMER_HW2
+#ifdef CONFIG_WIFI_CONTROL_FUNC
 			wifi_set_power(1, 0);
 #endif
 			WL_ERROR(("=========== WLAN going back to live  ========\n"));
@@ -108,17 +125,19 @@ dhd_customer_gpio_wlan_ctrl(int onoff)
 		case WLAN_POWER_OFF:
 			WL_TRACE(("%s: call customer specific GPIO to turn off WL_REG_ON\n",
 				__FUNCTION__));
-#ifdef CUSTOMER_HW
+#ifdef CONFIG_WIFI_CONTROL_EXPORT
 			bcm_wlan_power_off(1);
-#endif /* CUSTOMER_HW */
+#endif /* CONFIG_WIFI_CONTROL_EXPORT */
+		// In case if we use platform device removal of the device turns off the power
 		break;
 
 		case WLAN_POWER_ON:
 			WL_TRACE(("%s: call customer specific GPIO to turn on WL_REG_ON\n",
 				__FUNCTION__));
-#ifdef CUSTOMER_HW
+#ifdef CONFIG_WIFI_CONTROL_EXPORT
 			bcm_wlan_power_on(1);
-#endif /* CUSTOMER_HW */
+#endif /* CONFIG_WIFI_CONTROL_EXPORT */
+		// In case if we use platform device it will be done in add function 
 			/* Lets customer power to get stable */
 //			OSL_DELAY(500);
 		break;
@@ -130,20 +149,18 @@ dhd_customer_gpio_wlan_ctrl(int onoff)
 int
 dhd_custom_get_mac_address(unsigned char *buf)
 {
+	int ret = 0;
 	WL_TRACE(("%s Enter\n", __FUNCTION__));
-	if (!buf) {
-		WL_ERROR(("%s: target MAC buffer is NULL\n", __FUNCTION__));
+	if (!buf)
 		return -EINVAL;
-	}
-	if(bcm_wlan_mac == NULL){
-		WL_ERROR(("%s: using nvram.txt\n", __FUNCTION__));
-	} else {
-		printf("%s: ATAG MAC = %.2x:%.2x:%.2x:%.2x:%.2x:%.2x\n", __FUNCTION__,
-		bcm_wlan_mac[0], bcm_wlan_mac[1], bcm_wlan_mac[2], bcm_wlan_mac[3], bcm_wlan_mac[4], bcm_wlan_mac[5]);
-		memcpy(buf, bcm_wlan_mac, sizeof(bcm_wlan_mac));
-	}
 
 	/* Customer access to MAC address stored outside of DHD driver */
+#ifdef CONFIG_WIFI_CONTROL_FUNC
+	ret = wifi_get_mac_addr(buf);
+#endif /* CONFIG_WIFI_CONTROL_FUNC */
+#ifdef CONFIG_WIFI_CONTROL_EXPORT
+	memcpy(buf, bcm_wlan_mac, sizeof(bcm_wlan_mac));
+#endif /* CONFIG_WIFI_CONTROL_EXPORT */
 
 #ifdef EXAMPLE_GET_MAC
 	/* EXAMPLE code */
@@ -153,26 +170,53 @@ dhd_custom_get_mac_address(unsigned char *buf)
 	}
 #endif /* EXAMPLE_GET_MAC */
 
-	return 0;
+	return ret;
 }
 #endif /* GET_CUSTOM_MAC_ENABLE */
 
 /* Customized Locale table : OPTIONAL feature */
 const struct cntry_locales_custom translate_custom_table[] = {
 /* Table should be filled out based on custom platform regulatory requirement */
-#ifdef EXMAPLE_TABLE
+#ifdef COUNTRY_REGIONS
+	{"",   "XY", 4},   /* universal if Counry code is unknow or empty */
 	{"US", "US", 69}, /* input ISO "US" to : US regrev 69 */
 	{"CA", "US", 69}, /* input ISO "CA" to : US regrev 69 */
-	{"FR", "EU", 05},
-	{"DE", "EU", 05},
-	{"IR", "EU", 05},
-	{"UK", "EU", 05}, /* input ISO "UK" to : EU regrev 05 */
-	{"KR", "XY", 03},
-	{"AU", "XY", 03},
-	{"CH", "XY", 03}, /* input ISO "CH" to : XY regrev 03 */
-	{"TW", "XY", 03},
-	{"AR", "XY", 03}
-#endif /* EXMAPLE_TABLE */
+	{"EU", "EU", 5}, /* European union countries */
+	{"AT", "EU", 5},
+	{"BE", "EU", 5},
+	{"BG", "EU", 5},
+	{"CY", "EU", 5},
+	{"CZ", "EU", 5},
+	{"DK", "EU", 5},
+	{"EE", "EU", 5},
+	{"FI", "EU", 5},
+	{"FR", "EU", 5},
+	{"DE", "EU", 5},
+	{"GR", "EU", 5},
+	{"HU", "EU", 5},
+	{"IE", "EU", 5},
+	{"IT", "EU", 5},
+	{"LV", "EU", 5},
+	{"LI", "EU", 5},
+	{"LT", "EU", 5},
+	{"LU", "EU", 5},
+	{"MT", "EU", 5},
+	{"NL", "EU", 5},
+	{"PL", "EU", 5},
+	{"PT", "EU", 5},
+	{"RO", "EU", 5},
+	{"SK", "EU", 5},
+	{"SI", "EU", 5},
+	{"ES", "EU", 5},
+	{"SE", "EU", 5},
+	{"GB", "EU", 5}, /* input ISO "GB" to : EU regrev 05 */
+	{"KR", "XY", 3},
+	{"AU", "XY", 3},
+	{"CN", "XY", 3}, /* input ISO "CN" to : XY regrev 03 */
+	{"TW", "XY", 3},
+	{"AR", "XY", 3},
+	{"MX", "XY", 3}
+#endif /* COUNTRY_REGIONS */
 };
 
 
@@ -196,7 +240,13 @@ void get_customized_country_code(char *country_iso_code, wl_country_t *cspec)
 	if (strcmp(country_iso_code, translate_custom_table[i].iso_abbrev) == 0) {
 		memcpy(cspec->ccode,  translate_custom_table[i].custom_locale, WLC_CNTRY_BUF_SZ);
 		cspec->rev = translate_custom_table[i].custom_locale_rev;
+			break;
 		}
 	}
+#ifdef COUNTRY_REGIONS
+	/* if no country code matched return first universal code from translate_custom_table */
+	memcpy(cspec->ccode, translate_custom_table[0].custom_locale, WLC_CNTRY_BUF_SZ);
+	cspec->rev = translate_custom_table[0].custom_locale_rev;
+#endif /* COUNTRY_REGIONS */
 	return;
 }

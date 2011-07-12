@@ -22,7 +22,7 @@
 # software in any way with any other Broadcom software provided under a license
 # other than the GPL, without Broadcom's express prior written consent.
 #
-# $Id: GNUmakefile,v 1.9.24.4.2.4 2009/03/04 03:53:29 Exp $
+# $Id: GNUmakefile,v 1.9.24.4.2.4 2009-03-04 03:53:29 Exp $
 
 SRCBASE = ../..
 

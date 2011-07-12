@@ -21,7 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: bcmpcispi.h,v 13.11.8.3 2008/07/09 21:23:29 Exp $
+ * $Id: bcmpcispi.h,v 13.11.8.3 2008-07-09 21:23:29 Exp $
  */
 
 /* cpp contortions to concatenate w/arg prescan */

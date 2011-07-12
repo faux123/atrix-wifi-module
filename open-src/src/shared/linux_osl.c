@@ -21,7 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: linux_osl.c,v 1.125.12.3.8.7 2010/05/04 21:10:04 Exp $
+ * $Id: linux_osl.c,v 1.125.12.3.8.7 2010-05-04 21:10:04 Exp $
  */
 
 
@@ -37,6 +37,9 @@
 #include <bcmutils.h>
 #include <linux/delay.h>
 #include <pcicfg.h>
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 38))
+#include <linux/mutex.h>
+#endif 
 
 #define PCI_CFG_RETRY 		10
 
@@ -48,7 +51,11 @@
 #define STATIC_BUF_SIZE	(PAGE_SIZE*2)
 #define STATIC_BUF_TOTAL_LEN (MAX_STATIC_BUF_NUM*STATIC_BUF_SIZE)
 typedef struct bcm_static_buf {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 38))
+	struct mutex static_sem;
+#else
 	struct semaphore static_sem;
+#endif
 	unsigned char *buf_ptr;
 	unsigned char buf_use[MAX_STATIC_BUF_NUM];
 } bcm_static_buf_t;
@@ -59,7 +66,11 @@ static bcm_static_buf_t *bcm_static_buf = 0;
 typedef struct bcm_static_pkt {
 	struct sk_buff *skb_4k[MAX_STATIC_PKT_NUM];
 	struct sk_buff *skb_8k[MAX_STATIC_PKT_NUM];
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 38))
+	struct mutex osl_pkt_sem;
+#else
 	struct semaphore osl_pkt_sem;
+#endif
 	unsigned char pkt_use[MAX_STATIC_PKT_NUM*2];
 } bcm_static_pkt_t;
 static bcm_static_pkt_t *bcm_static_skb = 0;
@@ -153,14 +164,15 @@ osl_t *
 osl_attach(void *pdev, uint bustype, bool pkttag)
 {
 	osl_t *osh;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 27))
 
-// BEGIN Motorola IKSTABLEFOUR-1827 A21623
-// GFP_ATOMIC flag means you "must" get the page right now, cannot wait
-// In linux, if there is no order=3, that is, 8 continuous page at that time,
-// system will do reclaim, so, the requester will wait a while (for GFP_KERNEL)
-// which is not the case with GFP_ATOMIC
-	osh = kmalloc(sizeof(osl_t), GFP_KERNEL);
-// END Motorola IKSTABLEFOUR-1827 A21623
+	gfp_t flags;
+
+	flags = (in_atomic()) ? GFP_ATOMIC : GFP_KERNEL;
+	osh = kmalloc(sizeof(osl_t), flags);
+#else
+	osh = kmalloc(sizeof(osl_t), GFP_ATOMIC);
+#endif 
 	ASSERT(osh);
 
 	bzero(osh, sizeof(osl_t));
@@ -205,8 +217,11 @@ osl_attach(void *pdev, uint bustype, bool pkttag)
 			printk("alloc static buf at %x!\n", (unsigned int)bcm_static_buf);
 
 		
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 38))
+		mutex_init(&bcm_static_buf->static_sem);
+#else
 		init_MUTEX(&bcm_static_buf->static_sem);
-
+#endif
 		
 		bcm_static_buf->buf_ptr = (unsigned char *)bcm_static_buf + STATIC_BUF_SIZE;
 
@@ -222,8 +237,11 @@ osl_attach(void *pdev, uint bustype, bool pkttag)
 		bcopy(skb_buff_ptr, bcm_static_skb, sizeof(struct sk_buff *)*16);
 		for (i = 0; i < MAX_STATIC_PKT_NUM*2; i++)
 			bcm_static_skb->pkt_use[i] = 0;
-
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 38))
+		mutex_init(&bcm_static_skb->osl_pkt_sem);
+#else
 		init_MUTEX(&bcm_static_skb->osl_pkt_sem);
+#endif
 	}
 #endif 
 	return osh;
@@ -252,10 +270,15 @@ void*
 osl_pktget(osl_t *osh, uint len)
 {
 	struct sk_buff *skb;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 27))
 	gfp_t flags;
-
 	flags = (in_atomic()) ? GFP_ATOMIC : GFP_KERNEL;
+
 	if ((skb = __dev_alloc_skb(len, flags))) {
+#else
+	if ((skb = dev_alloc_skb(len))) {
+#endif 
+
 		skb_put(skb, len);
 		skb->priority = 0;
 
@@ -312,7 +335,11 @@ osl_pktget_static(osl_t *osh, uint len)
 	}
 
 	
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 38))
+	mutex_lock(&bcm_static_skb->osl_pkt_sem);
+#else
 	down(&bcm_static_skb->osl_pkt_sem);
+#endif
 	if (len <= PAGE_SIZE)
 	{
 		
@@ -325,8 +352,11 @@ osl_pktget_static(osl_t *osh, uint len)
 		if (i != MAX_STATIC_PKT_NUM)
 		{
 			bcm_static_skb->pkt_use[i] = 1;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 38))
+			mutex_unlock(&bcm_static_skb->osl_pkt_sem);
+#else
 			up(&bcm_static_skb->osl_pkt_sem);
-
+#endif
 			skb = bcm_static_skb->skb_4k[i];
 			skb->tail = skb->data + len;
 			skb->len = len;
@@ -345,7 +375,11 @@ osl_pktget_static(osl_t *osh, uint len)
 	if (i != MAX_STATIC_PKT_NUM)
 	{
 		bcm_static_skb->pkt_use[i+MAX_STATIC_PKT_NUM] = 1;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 38))
+		mutex_unlock(&bcm_static_skb->osl_pkt_sem);
+#else
 		up(&bcm_static_skb->osl_pkt_sem);
+#endif
 		skb = bcm_static_skb->skb_8k[i];
 		skb->tail = skb->data + len;
 		skb->len = len;
@@ -355,7 +389,11 @@ osl_pktget_static(osl_t *osh, uint len)
 
 
 	
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 38))
+	mutex_unlock(&bcm_static_skb->osl_pkt_sem);
+#else
 	up(&bcm_static_skb->osl_pkt_sem);
+#endif
 	printk("all static pkt in use!\n");
 	return osl_pktget(osh, len);
 }
@@ -370,10 +408,17 @@ osl_pktfree_static(osl_t *osh, void *p, bool send)
 	{
 		if (p == bcm_static_skb->skb_4k[i])
 		{
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 38))
+			mutex_lock(&bcm_static_skb->osl_pkt_sem);
+#else
 			down(&bcm_static_skb->osl_pkt_sem);
+#endif
 			bcm_static_skb->pkt_use[i] = 0;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 38))
+			mutex_unlock(&bcm_static_skb->osl_pkt_sem);
+#else
 			up(&bcm_static_skb->osl_pkt_sem);
-
+#endif
 			
 			return;
 		}
@@ -463,6 +508,9 @@ void*
 osl_malloc(osl_t *osh, uint size)
 {
 	void *addr;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 27))
+	gfp_t flags;
+#endif 
 
 	
 	if (osh)
@@ -474,7 +522,11 @@ osl_malloc(osl_t *osh, uint size)
 		int i = 0;
 		if ((size >= PAGE_SIZE)&&(size <= STATIC_BUF_SIZE))
 		{
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 38))
+			mutex_lock(&bcm_static_buf->static_sem);
+#else
 			down(&bcm_static_buf->static_sem);
+#endif
 			
 			for (i = 0; i < MAX_STATIC_BUF_NUM; i++)
 			{
@@ -484,14 +536,21 @@ osl_malloc(osl_t *osh, uint size)
 			
 			if (i == MAX_STATIC_BUF_NUM)
 			{
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 38))
+				mutex_unlock(&bcm_static_buf->static_sem);
+#else
 				up(&bcm_static_buf->static_sem);
+#endif
 				printk("all static buff in use!\n");
 				goto original;
 			}
 			
 			bcm_static_buf->buf_use[i] = 1;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 38))
+			mutex_unlock(&bcm_static_buf->static_sem);
+#else
 			up(&bcm_static_buf->static_sem);
-
+#endif
 			bzero(bcm_static_buf->buf_ptr+STATIC_BUF_SIZE*i, size);
 			if (osh)
 				osh->malloced += size;
@@ -502,9 +561,12 @@ osl_malloc(osl_t *osh, uint size)
 original:
 #endif 
 
-// START Motorola IKSTABLEFOUR-1827 A21623
-	if ((addr = kmalloc(size, GFP_KERNEL)) == NULL) {
-// END Motorola IKSTABLEFOUR-1827 A21623
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 27))
+	flags = (in_atomic()) ? GFP_ATOMIC : GFP_KERNEL;
+	if ((addr = kmalloc(size, flags)) == NULL) {
+#else
+	if ((addr = kmalloc(size, GFP_ATOMIC)) == NULL) {
+#endif
 		if (osh)
 			osh->failed++;
 		return (NULL);
@@ -528,10 +590,17 @@ osl_mfree(osl_t *osh, void *addr, uint size)
 			
 			buf_idx = ((unsigned char *)addr - bcm_static_buf->buf_ptr)/STATIC_BUF_SIZE;
 			
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 38))
+			mutex_lock(&bcm_static_buf->static_sem);
+#else
 			down(&bcm_static_buf->static_sem);
+#endif
 			bcm_static_buf->buf_use[buf_idx] = 0;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 38))
+			mutex_unlock(&bcm_static_buf->static_sem);
+#else
 			up(&bcm_static_buf->static_sem);
-
+#endif
 			if (osh) {
 				ASSERT(osh->magic == OS_HANDLE_MAGIC);
 				osh->malloced -= size;
@@ -616,8 +685,15 @@ void *
 osl_pktdup(osl_t *osh, void *skb)
 {
 	void * p;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 27))
+	gfp_t flags;
 
+	flags = (in_atomic()) ? GFP_ATOMIC : GFP_KERNEL;
+	if ((p = skb_clone((struct sk_buff*)skb, flags)) == NULL)
+#else
 	if ((p = skb_clone((struct sk_buff*)skb, GFP_ATOMIC)) == NULL)
+#endif 
+
 		return NULL;
 
 	

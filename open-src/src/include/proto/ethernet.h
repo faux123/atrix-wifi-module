@@ -21,7 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: ethernet.h,v 9.45.56.5 2010/02/22 22:04:36 Exp $
+ * $Id: ethernet.h,v 9.45.56.5 2010-02-22 22:04:36 Exp $
  */
 
 

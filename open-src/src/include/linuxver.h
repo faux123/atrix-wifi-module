@@ -22,7 +22,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: linuxver.h,v 13.38.8.1.8.6 2010/04/29 05:00:46 Exp $
+ * $Id: linuxver.h,v 13.38.8.1.8.6 2010-04-29 05:00:46 Exp $
  */
 
 
@@ -428,6 +428,59 @@ pci_restore_state(struct pci_dev *dev, u32 *buffer)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 19)
 #define CHECKSUM_HW	CHECKSUM_PARTIAL
 #endif
+
+
+
+typedef struct {
+	void 	*parent;  
+	struct	task_struct *p_task;
+	long 	thr_pid;
+	int 	prio; 
+	struct	semaphore sema;
+	bool	terminated;
+	struct	completion completed;
+} tsk_ctl_t;
+
+
+
+
+
+#ifdef DHD_DEBUG
+#define DBG_THR(x) printk x
+#else
+#define DBG_THR(x)
+#endif
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 0))
+#define SMP_RD_BARRIER_DEPENDS(x) smp_read_barrier_depends(x)
+#else
+#define SMP_RD_BARRIER_DEPENDS(x) smp_rmb(x)
+#endif
+
+
+#define PROC_START(thread_func, owner, tsk_ctl, flags) \
+{ \
+	sema_init(&((tsk_ctl)->sema), 0); \
+	init_completion(&((tsk_ctl)->completed)); \
+	(tsk_ctl)->parent = owner; \
+	(tsk_ctl)->terminated = FALSE; \
+	(tsk_ctl)->thr_pid = kernel_thread(thread_func, tsk_ctl, flags); \
+	if ((tsk_ctl)->thr_pid > 0 ) \
+		wait_for_completion(&((tsk_ctl)->completed)); \
+	DBG_THR(("%s thr:%lx started\n", __FUNCTION__, (tsk_ctl)->thr_pid)); \
+}
+
+#define PROC_STOP(tsk_ctl) \
+{ \
+	(tsk_ctl)->terminated = TRUE; \
+	smp_wmb(); \
+	up(&((tsk_ctl)->sema));	\
+	wait_for_completion(&((tsk_ctl)->completed)); \
+	DBG_THR(("%s thr:%lx terminated OK\n", __FUNCTION__, (tsk_ctl)->thr_pid)); \
+	(tsk_ctl)->thr_pid = -1; \
+}
+
+
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 31))
 #define KILL_PROC(nr, sig) \

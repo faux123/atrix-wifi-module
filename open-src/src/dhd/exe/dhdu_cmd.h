@@ -21,7 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: dhdu_cmd.h,v 1.3.102.2 2008/05/07 00:19:34 Exp $
+ * $Id: dhdu_cmd.h,v 1.3.102.2 2008-05-07 00:19:34 Exp $
  */
 
 #ifndef _dhdu_cmd_h_

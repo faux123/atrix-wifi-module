@@ -22,7 +22,7 @@
 # software in any way with any other Broadcom software provided under a license
 # other than the GPL, without Broadcom's express prior written consent.
 #
-# $Id: Makerules,v 2.69.30.3.2.6 2009/05/15 23:06:59 Exp $
+# $Id: Makerules,v 2.69.30.3.2.6 2009-05-15 23:06:59 Exp $
 
 # first rule (default)
 all:

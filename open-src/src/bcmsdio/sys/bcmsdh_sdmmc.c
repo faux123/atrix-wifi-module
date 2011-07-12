@@ -21,7 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: bcmsdh_sdmmc.c,v 1.1.2.5.6.30.4.1 2010/09/02 23:12:21 Exp $
+ * $Id: bcmsdh_sdmmc.c,v 1.1.2.5.6.30.4.1 2010-09-02 23:12:21 Exp $
  */
 #include <typedefs.h>
 
@@ -302,7 +302,7 @@ sdioh_interrupt_register(sdioh_info_t *sd, sdioh_cb_fn_t fn, void *argh)
 	}
 #elif defined(HW_OOB)
 	sdioh_enable_func_intr();
-#endif /* defined(OOB_INTR_ONLY) */
+#endif /* !defined(OOB_INTR_ONLY) */
 	return SDIOH_API_RC_SUCCESS;
 }
 
@@ -672,13 +672,13 @@ sdioh_enable_hw_oob_intr(sdioh_info_t *sd, bool enable)
 	uint8 data;
 
 	if (enable)
-		data = 3;	/* enable hw oob interrupt */
+		data = SDIO_SEPINT_MASK | SDIO_SEPINT_OE;	/* enable hw oob interrupt */
 	else
-		data = 4;	/* disable hw oob interrupt */
-// Dima
-//	data |= 4;		/* Active HIGH */
+		data = SDIO_SEPINT_ACT_HI;	/* disable hw oob interrupt */
+// Olympus & etcs are using LOW
+//	data |= SDIO_SEPINT_ACT_HI; 		/* Active HIGH */
 
-	status = sdioh_request_byte(sd, SDIOH_WRITE, 0, 0xf2, &data);
+	status = sdioh_request_byte(sd, SDIOH_WRITE, 0, SDIOD_CCCR_BRCM_SEPINT, &data);
 	return status;
 }
 #endif /* defined(OOB_INTR_ONLY) && defined(HW_OOB) */

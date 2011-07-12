@@ -22,7 +22,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: bcmsdh.c,v 1.35.2.1.4.8.6.13 2010/04/06 03:26:57 Exp $
+ * $Id: bcmsdh.c,v 1.35.2.1.4.8.6.13 2010-04-06 03:26:57 Exp $
  */
 /* ****************** BCMSDH Interface Functions *************************** */
 

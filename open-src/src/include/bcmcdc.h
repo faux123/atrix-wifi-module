@@ -24,7 +24,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: bcmcdc.h,v 13.14.16.3.16.4 2009/04/12 16:58:45 Exp $
+ * $Id: bcmcdc.h,v 13.14.16.3.16.4 2009-04-12 16:58:45 Exp $
  */
 #include <proto/ethernet.h>
 

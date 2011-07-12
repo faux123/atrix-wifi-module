@@ -21,7 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: bcmsdstd_linux.c,v 1.11.18.2.16.1 2010/08/17 17:03:13 Exp $
+ * $Id: bcmsdstd_linux.c,v 1.11.18.2.16.1 2010-08-17 17:03:13 Exp $
  */
 
 #include <typedefs.h>

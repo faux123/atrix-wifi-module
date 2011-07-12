@@ -21,7 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: bcmeth.h,v 9.9.46.1 2008/11/20 00:51:20 Exp $
+ * $Id: bcmeth.h,v 9.9.46.1 2008-11-20 00:51:20 Exp $
  */
 
 

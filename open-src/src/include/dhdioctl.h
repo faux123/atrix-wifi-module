@@ -25,7 +25,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: dhdioctl.h,v 13.7.8.1.4.1.16.5 2010/05/21 21:49:38 Exp $
+ * $Id: dhdioctl.h,v 13.7.8.1.4.1.16.5 2010-05-21 21:49:38 Exp $
  */
 
 #ifndef _dhdioctl_h_

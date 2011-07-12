@@ -22,7 +22,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: sdio.h,v 13.24.4.1.4.1.16.1 2009/08/12 01:08:02 Exp $
+ * $Id: sdio.h,v 13.24.4.1.4.1.16.1 2009-08-12 01:08:02 Exp $
  */
 
 #ifndef	_SDIO_H

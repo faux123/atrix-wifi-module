@@ -19,7 +19,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: epivers.h.in,v 13.25 2005/10/28 18:35:33 Exp $
+ * $Id: epivers.h.in,v 13.25 2005-10-28 18:35:33 Exp $
  *
 */
 
@@ -33,16 +33,16 @@
 
 #define	EPI_RC_NUMBER		248
 
-#define	EPI_INCREMENTAL_NUMBER	21
+#define	EPI_INCREMENTAL_NUMBER	31
 
-#define	EPI_BUILD_NUMBER	0
+#define EPI_BUILD_NUMBER	1
 
-#define	EPI_VERSION		4, 218, 248, 21
+#define	EPI_VERSION		4, 218, 248, 31
 
-#define	EPI_VERSION_NUM		0x04daf815
+#define	EPI_VERSION_NUM		0x04daf81f
 
 
-#define	EPI_VERSION_STR		"4.218.248.21"
-#define	EPI_ROUTER_VERSION_STR	"4.219.248.21"
+#define	EPI_VERSION_STR		"4.218.248.31"
+#define	EPI_ROUTER_VERSION_STR	"@EPI_ROUTER_VERSION_STR@"
 
 #endif 

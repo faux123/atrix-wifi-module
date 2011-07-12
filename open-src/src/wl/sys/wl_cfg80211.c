@@ -21,7 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: wl_cfg80211.c,v 1.1.2.28 2010/05/04 21:43:38 Exp $
+ * $Id: wl_cfg80211.c,v 1.1.2.28 2010-05-04 21:43:38 Exp $
  */
 
 #include <typedefs.h>

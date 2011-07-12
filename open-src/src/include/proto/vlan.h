@@ -21,7 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: vlan.h,v 9.4.196.2 2008/12/07 21:19:20 Exp $
+ * $Id: vlan.h,v 9.4.196.2 2008-12-07 21:19:20 Exp $
  */
 
 

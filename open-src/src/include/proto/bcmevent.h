@@ -24,7 +24,7 @@
  *
  * Dependencies: proto/bcmeth.h
  *
- * $Id: bcmevent.h,v 9.34.4.1.20.16.64.1 2010/11/08 21:57:03 Exp $
+ * $Id: bcmevent.h,v 9.34.4.1.20.16.64.1 2010-11-08 21:57:03 Exp $
  *
  */
 

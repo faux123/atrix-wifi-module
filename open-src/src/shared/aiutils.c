@@ -22,7 +22,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: aiutils.c,v 1.6.4.7.4.6 2010/04/21 20:43:47 Exp $
+ * $Id: aiutils.c,v 1.6.4.7.4.6 2010-04-21 20:43:47 Exp $
  */
 
 #include <typedefs.h>

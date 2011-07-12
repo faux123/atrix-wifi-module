@@ -21,7 +21,7 @@
  *
  * Fundamental constants relating to IP Protocol
  *
- * $Id: bcmip.h,v 9.16.186.4 2009/01/27 04:25:25 Exp $
+ * $Id: bcmip.h,v 9.16.186.4 2009-01-27 04:25:25 Exp $
  */
 
 

@@ -4,7 +4,7 @@
 #  and sources(windows style makefile). it doesn't depend on 
 #  Makerules.env except to get SRCBASE if not yet defined. 
 #
-#  $Id: GNUmakefile.inc,v 1.103.50.2 2009/08/18 18:42:30 Exp $
+#  $Id: GNUmakefile.inc,v 1.103.50.2 2009-08-18 18:42:30 Exp $
 
 SHELL=bash
 export SHELL

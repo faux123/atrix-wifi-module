@@ -20,7 +20,7 @@
  *      Notwithstanding the above, under no circumstances may you combine this
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
- * $Id: osl.h,v 13.37.32.1 2008/11/20 00:51:15 Exp $
+ * $Id: osl.h,v 13.37.32.1 2008-11-20 00:51:15 Exp $
  */
 
 

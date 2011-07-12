@@ -24,7 +24,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: dhd_proto.h,v 1.2.82.1.4.1.16.7 2010/05/10 12:54:59 Exp $
+ * $Id: dhd_proto.h,v 1.2.82.1.4.1.16.7 2010-05-10 12:54:59 Exp $
  */
 
 #ifndef _dhd_proto_h_

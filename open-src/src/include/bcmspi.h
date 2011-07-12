@@ -21,7 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: bcmspi.h,v 13.3.10.2 2008/06/30 21:09:40 Exp $
+ * $Id: bcmspi.h,v 13.3.10.2 2008-06-30 21:09:40 Exp $
  */
 
 extern void spi_devintr_off(sdioh_info_t *sd);

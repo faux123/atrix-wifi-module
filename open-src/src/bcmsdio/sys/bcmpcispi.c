@@ -21,7 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: bcmpcispi.c,v 1.22.2.4.4.5.6.1 2010/08/13 00:26:05 Exp $
+ * $Id: bcmpcispi.c,v 1.22.2.4.4.5.6.1 2010-08-13 00:26:05 Exp $
  */
 
 #include <typedefs.h>

@@ -7,7 +7,7 @@
  *
  * Copyright (C) 2002 Broadcom Corporation
  *
- * $Id: eapol.h,v 9.18.260.1.2.1.6.6 2009/04/08 05:00:08 Exp $
+ * $Id: eapol.h,v 9.18.260.1.2.1.6.6 2009-04-08 05:00:08 Exp $
  */
 
 #ifndef _eapol_h_

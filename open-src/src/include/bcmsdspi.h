@@ -21,7 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: bcmsdspi.h,v 13.8.10.2 2008/06/30 21:09:40 Exp $
+ * $Id: bcmsdspi.h,v 13.8.10.2 2008-06-30 21:09:40 Exp $
  */
 
 /* global msglevel for debug messages - bitvals come from sdiovar.h */

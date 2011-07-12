@@ -21,7 +21,7 @@
 # software in any way with any other Broadcom software provided under a license
 # other than the GPL, without Broadcom's express prior written consent.
 #
-# $Id: Makefile,v 1.55.2.6.2.10.6.42 2010/08/20 00:15:16 Exp $
+# $Id: Makefile,v 1.55.2.6.2.10.6.42.4.2 2010-12-02 01:23:07 Exp $
 #
 ifeq ($(ANDROID_BUILD_TOP),)
 $(error ********************** ANDROID_BUILD_TOP  not set please follow release instructions Exit)
@@ -72,6 +72,9 @@ $(warning Found LINUXBUILDDIR=$(LINUXBUILDDIR))
 
 # check if 2.4 kernel or 2.5+ kernel
 BCM_KVER:=$(shell echo $(LINUXVER) | cut -c1-3 | sed 's/2\.[56]/2\.6/')
+
+LINUX_MAJOR=$(shell echo $(LINUXVER) | cut -c3-3)
+LINUX_MINOR=$(shell echo $(LINUXVER) | cut -c5-6)
 
 # Allow CROSS_COMPILE to specify compiler base
 CC := $(CROSS_COMPILE)gcc
@@ -250,7 +253,14 @@ DFLAGS += -DCUSTOM_OOB_GPIO_NUM=152
 DFLAGS += -DOOB_INTR_ONLY
 DFLAGS += -DMMC_SDIO_ABORT
 DFLAGS += -DSOFTAP
+DFLAGS += -DKEEP_ALIVE
 DFLAGS += -DPNO_SUPPORT
+DFLAGS += -DCONFIG_FIRST_SCAN
+ifeq ("$(LINUX_MINOR)", "35")
+$(warning Gingerbread and K35.7 kernel needs extra defintions **)
+DFLAGS += -DHW_OOB
+DFLAGS += -DCSCAN
+endif
 else
 ifneq ($(findstring -oob-,-$(TARGET)-),)
 DFLAGS += -DOOB_INTR_ONLY
@@ -287,13 +297,13 @@ DFLAGS += -DOOB_INTR_ONLY
 DFLAGS += -DMMC_SDIO_ABORT
 DFLAGS += -DSOFTAP
 DFLAGS += -DENABLE_ROAMING
+#DFLAGS += -DCSCAN
 DFLAGS += -DPNO_SUPPORT
 DFLAGS += -DGET_CUSTOM_MAC_ENABLE
 DFLAGS += -DKEEP_ALIVE
-ifeq ($(FACTORY_BUILD),false)
-DFLAGS += -DCONFIG_FIRST_SCAN
-endif
-
+DFLAGS += -DCOUNTRY_REGIONS
+DFLAGS += -DDHD_USE_STATIC_BUF
+DFLAGS += -DCONFIG_WIFI_CONTROL_FUNC
 ifeq ($(OEM_ANDROID),1)
 DFLAGS += -DOEM_ANDROID -DEMBEDDED_PLATFORM -DARP_OFFLOAD_SUPPORT -DPKT_FILTER_SUPPORT
 endif

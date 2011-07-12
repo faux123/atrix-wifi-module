@@ -20,7 +20,7 @@
  *      Notwithstanding the above, under no circumstances may you combine this
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
- * $Id: bcmdefs.h,v 13.38.4.10.2.7.6.11 2010/02/01 05:51:55 Exp $
+ * $Id: bcmdefs.h,v 13.38.4.10.2.7.6.11 2010-02-01 05:51:55 Exp $
  */
 
 
