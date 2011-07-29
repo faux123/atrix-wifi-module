@@ -240,7 +240,7 @@ void get_customized_country_code(char *country_iso_code, wl_country_t *cspec)
 	if (strcmp(country_iso_code, translate_custom_table[i].iso_abbrev) == 0) {
 		memcpy(cspec->ccode,  translate_custom_table[i].custom_locale, WLC_CNTRY_BUF_SZ);
 		cspec->rev = translate_custom_table[i].custom_locale_rev;
-			break;
+			return;
 		}
 	}
 #ifdef COUNTRY_REGIONS

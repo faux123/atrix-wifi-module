@@ -262,8 +262,8 @@ typedef struct iscan_info {
 
 #define BT_DHCP_eSCO_FIX 
 #define BT_DHCP_USE_FLAGS  
-#define BT_DHCP_OPPORTUNITY_WINDOW_TIME	 2500 
-#define BT_DHCP_FLAG_FORCE_TIME 5500 
+#define BT_DHCP_OPPORTUNITY_WINDOW_TIME	 2500
+#define BT_DHCP_FLAG_FORCE_TIME 3000
 
 
 static int wl_iw_set_btcoex_dhcp(
@@ -760,8 +760,8 @@ wl_iw_set_country(
 		get_customized_country_code((char *)&cspec.country_abbrev, &cspec);
 
 		
-		if ((error = dev_wlc_ioctl(dev, WLC_SET_COUNTRY, \
-			&country_code, sizeof(country_code))) >= 0) {
+		if ((error = dev_iw_iovar_setbuf(dev, "country", &cspec, \
+				sizeof(cspec), smbuf, sizeof(smbuf))) >= 0) {
 				p += snprintf(p, MAX_WX_STRING, "OK");
 				WL_ERROR(("%s: set country for %s as %s rev %d is OK\n", \
 					__FUNCTION__, country_code, cspec.ccode, cspec.rev));
@@ -1012,6 +1012,10 @@ wl_iw_set_btcoex_dhcp(
 #ifdef  CUSTOMER_HW2
 	strncpy((char *)&powermode_val, extra + strlen("BTCOEXMODE") +1, 1);
 #else
+	g_bt->dhcp_done = false;
+	// Since we have cases when late_suspend handler is never called after wake
+	// I am sure in some cases dhcp fails because of that. Delete Mcast filters here
+	net_os_set_packet_filter(dev, 0);
 	strncpy((char *)&powermode_val, extra + strlen("POWERMODE") +1, 1);
 #endif
 
@@ -1075,6 +1079,7 @@ wl_iw_set_btcoex_dhcp(
 #ifndef CUSTOMER_HW2
 		
 		dev_wlc_ioctl(dev, WLC_SET_PM, &pm, sizeof(pm));
+		g_bt->dhcp_done = true;
 #endif
 
 		
@@ -3835,7 +3840,7 @@ wl_iw_iscan_set_scan(
 #ifdef PNO_SUPPORT
 	
 	if  (dhd_dev_get_pno_status(dev)) {
-		WL_TRACE_SCAN(("%s: Scan called when PNO is active\n", __FUNCTION__));
+		WL_ERROR(("%s: Scan called when PNO is active\n", __FUNCTION__));
 	}
 #endif 
 
@@ -6188,7 +6193,7 @@ static int iwpriv_set_cscan(struct net_device *dev, struct iw_request_info *info
 		wrqu->data.pointer, wrqu->data.length));
 
 	if (g_onoff == G_WLAN_SET_OFF) {
-		WL_TRACE(("%s: driver is not up yet after START\n", __FUNCTION__));
+		WL_ERROR(("%s: driver is not up yet after START\n", __FUNCTION__));
 		return -1;
 	}
 
