@@ -153,9 +153,9 @@ DFLAGS += -DDHD_SDALIGN=64 -DMAX_HDR_READ=64 -DDHD_FIRSTREAD=64
 endif
 
 WFLAGS := -Wall -Wstrict-prototypes
-ifeq (,$(findstring 2.4.18,$(LINUXVER)))
-WFLAGS += -Werror
-endif
+#ifeq (,$(findstring 2.4.18,$(LINUXVER)))
+#WFLAGS += -Werror
+#endif
 
 CFILES:= dhd_linux.c linux_osl.c bcmutils.c dhd_common.c dhd_custom_gpio.c
 CFILES += siutils.c sbutils.c aiutils.c hndpmu.c
