@@ -116,7 +116,7 @@ typedef const struct si_pub  si_t;
 #include <linux/rtnetlink.h>
 
 #define WL_IW_USE_ISCAN  0
-#define ENABLE_ACTIVE_PASSIVE_SCAN_SUPPRESS  0
+#define ENABLE_ACTIVE_PASSIVE_SCAN_SUPPRESS  1
 
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 25)) && 1
